@@ -144,7 +144,7 @@ if [[ -x /usr/local/bin/autopkg ]] && [[ -r "$recipe_list" ]]; then
         
     echo "" >> /tmp/autopkg.out
     echo "" > /tmp/autopkg_error.out
-    echo "Error log for AutoPkg run" >> /tmp/autopkg_error.out
+    #echo "Error log for AutoPkg run" >> /tmp/autopkg_error.out
     echo "" >> /tmp/autopkg_error.out 
     /usr/local/bin/autopkg repo-update all 2>&1 >> /tmp/autopkg.out 2>>/tmp/autopkg_error.out
     cat /tmp/autopkg.out >> "$log_location" && cat /tmp/autopkg_error.out >> "$log_location"
@@ -189,7 +189,7 @@ if [[ -x /usr/local/bin/autopkg ]] && [[ -r "$recipe_list" ]]; then
     cat /tmp/autopkg_error.out >> "$log_location"    
     ScriptLogging "Finished AutoPkg run"
     echo "" >> /tmp/autopkg_error.out
-    echo "End of error log for AutoPkg run" >> /tmp/autopkg_error.out
+    #echo "End of error log for AutoPkg run" >> /tmp/autopkg_error.out
     echo "" >> /tmp/autopkg_error.out
     
     if [[ -z "$slack_post_processor" ]] && [[ ! -z "$slack_webhook" ]]; then
@@ -209,9 +209,13 @@ if [[ -x /usr/local/bin/autopkg ]] && [[ -r "$recipe_list" ]]; then
        # error output logged to /tmp/autopkg_error.out should be output to Slack,
        # using the SendToSlack function.
     
-       ScriptLogging "Sending AutoPkg error log to Slack"
-       SendToSlack /tmp/autopkg_error.out ${slack_webhook}
-       ScriptLogging "Sent autopkg log to $slack_webhook. Ending run."
+       if [[ -s /tmp/autopkg_error.out ]]; then
+           echo "No errors found, exiting" >> /tmp/autopkg.out
+       else
+           ScriptLogging "Sending AutoPkg error log to Slack"
+           SendToSlack /tmp/autopkg_error.out ${slack_webhook}
+           ScriptLogging "Sent autopkg log to $slack_webhook. Ending run."
+       fi
     
     fi
 
